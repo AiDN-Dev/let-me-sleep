@@ -1,0 +1,20 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+
+# Godo engine
+.import/
+.export/
+
+# Builds
+*.exe
+*.pck
+*.zip
+
+# OS Junk
+.DS_Store
+Thumbs.db
+
+# Editor Backups
+*~
