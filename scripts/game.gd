@@ -1,6 +1,7 @@
 extends Node2D
 
 @onready var qte_window = $UI/QTEWindow
+@onready var dog_window = $UI/DogInterruptWindow
 
 var rng := RandomNumberGenerator.new()
 
@@ -30,5 +31,10 @@ func _on_qte_finished(success: bool) -> void:
 	if success:
 		start_sleep()
 	else:
-		# Right now failure restarts the loop
-		start_sleep()
+		# open dog interruption instead of restarting loop
+		dog_window.start_interruption()
+		dog_window.connect("interruption_finished", Callable(self, "_on_dog_finished"), CONNECT_ONE_SHOT)
+		
+func _on_dog_finished():
+	dog_window.hide()
+	start_sleep()
