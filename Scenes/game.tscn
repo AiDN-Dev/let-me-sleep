@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://darwxehgn45y8" path="res://scripts/qte_window.gd" id="1_ebmjs"]
 [ext_resource type="Script" uid="uid://cnknpjkg77j4k" path="res://scripts/game.gd" id="1_qxrlw"]
+[ext_resource type="Script" uid="uid://br77gh4vfh0aa" path="res://scripts/Managers/interruption_manager.gd" id="2_wowpa"]
 [ext_resource type="Script" uid="uid://dd70biocct8y1" path="res://scripts/dog_interrupt_window.gd" id="3_wrm1d"]
 [ext_resource type="Script" uid="uid://divahfntlfbln" path="res://scripts/dog.gd" id="4_3dryh"]
 
@@ -22,6 +23,46 @@ offset_bottom = 17.0
 color = Color(8.904189e-07, 0.41373625, 0.41455206, 1)
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=1549512587]
+
+[node name="InterruptionManager" type="Node" parent="UI" unique_id=225997389]
+script = ExtResource("2_wowpa")
+
+[node name="DogInterruptWindow" type="Panel" parent="UI/InterruptionManager" unique_id=1729521788]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -80.0
+offset_right = 180.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("3_wrm1d")
+
+[node name="Dog" type="ColorRect" parent="UI/InterruptionManager/DogInterruptWindow" unique_id=1431327290]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 32.0
+color = Color(1, 0, 0, 1)
+script = ExtResource("4_3dryh")
+floor_node_path = NodePath("../Floor")
+
+[node name="Floor" type="ColorRect" parent="UI/InterruptionManager/DogInterruptWindow" unique_id=1724974484]
+layout_mode = 0
+offset_left = 135.0
+offset_top = 104.0
+offset_right = 235.0
+offset_bottom = 154.0
+color = Color(1.3897754e-06, 0.32097825, 1.4439226e-07, 1)
+
+[node name="InstructionLabel" type="Label" parent="UI/InterruptionManager/DogInterruptWindow" unique_id=254534964]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Move the dog to the floor"
 
 [node name="QTEWindow" type="Panel" parent="UI" unique_id=1635344650]
 visible = false
@@ -54,39 +95,12 @@ layout_mode = 2
 layout_mode = 2
 text = "Hint/Timer"
 
-[node name="DogInterruptWindow" type="Panel" parent="UI" unique_id=1729521788]
+[node name="FailPanel" type="Panel" parent="UI" unique_id=591923084]
 visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -180.0
-offset_top = -80.0
-offset_right = 180.0
-offset_bottom = 80.0
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource("3_wrm1d")
-
-[node name="Dog" type="ColorRect" parent="UI/DogInterruptWindow" unique_id=1431327290]
-layout_mode = 0
-offset_right = 64.0
-offset_bottom = 32.0
-color = Color(1, 0, 0, 1)
-script = ExtResource("4_3dryh")
-floor_node_path = NodePath("../Floor")
-
-[node name="Floor" type="ColorRect" parent="UI/DogInterruptWindow" unique_id=1724974484]
-layout_mode = 0
-offset_left = 135.0
-offset_top = 104.0
-offset_right = 235.0
-offset_bottom = 154.0
-color = Color(1.3897754e-06, 0.32097825, 1.4439226e-07, 1)
-
-[node name="InstructionLabel" type="Label" parent="UI/DogInterruptWindow" unique_id=254534964]
-layout_mode = 0
 offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="SleepScoreLabel" type="Label" parent="UI" unique_id=497460869]
+offset_right = 93.0
 offset_bottom = 23.0
-text = "Move the dog to the floor"
+text = "Sleep Score:"
