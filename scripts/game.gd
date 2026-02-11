@@ -1,5 +1,7 @@
 extends Node2D
 
+const QTEKey = preload("res://scripts/Managers/qte_key.gd")
+
 # === Node references ===
 @onready var qte_window = $UI/QTEWindow
 @onready var interruption_manager = $UI/InterruptionManager
@@ -18,10 +20,10 @@ func _ready() -> void:
 	rng.randomize()
 
 	# Connect QTE signal
-	qte_window.connect("qte_finished", Callable(self, "_on_qte_finished"))
+	qte_window.qte_finished.connect(_on_qte_finished)
 	
 	# Connect Interruption Manager
-	interruption_manager.connect("interruption_finished", Callable(self, "_on_interruption_finished"))
+	interruption_manager.interruption_finished.connect(_on_interruption_finished)
 
 	# Connect dog interruption signal (once)
 	#dog_window.connect("interruption_finished", Callable(self, "_on_dog_finished"))
@@ -47,22 +49,14 @@ func start_sleep() -> void:
 	start_qte()
 
 func start_qte() -> void:
-	var keys = [KEY_Z, KEY_X, KEY_C]
-	var key = keys.pick_random()
-
-	var texts = [
-		"HOLD TO RELAX",
-		"TRY TO SLEEP",
-		"DO NOT WAKE UP",
-		"IGNORE THE THOUGHTS"
+	var qte_sequence: Array[QTEKey] = [
+		QTEKey.new(KEY_Z, 1.0),
+		QTEKey.new(KEY_X, 1.0),
+		QTEKey.new(KEY_UP, 0.7),
+		QTEKey.new(KEY_DOWN, 0.7)
 	]
 	
-	# Difficulty scaling
-	var base_time: float = 2.0
-	var difficulty_scale: float = 0.1 * night_progress
-	qte_window.hold_time = max(0.6, base_time - difficulty_scale)
-
-	qte_window.start_qte(texts.pick_random(), key)
+	qte_window.start_qte("Follow the sequence!", qte_sequence)
 
 # === Event handlers ===
 func _on_qte_finished(success: bool) -> void:

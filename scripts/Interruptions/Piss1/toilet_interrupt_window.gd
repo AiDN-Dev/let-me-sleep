@@ -23,13 +23,14 @@ func start_interruption(new_difficulty: int = 0):
 	active = true
 	show()
 
-	# Scale the player's effectiveness
-	progress_per_press = 1.5 - difficulty * 0.05
-	if progress_per_press < 0.3:
-		progress_per_press = 0.3
+	# --- Player effectiveness: decreases slightly as difficulty rises ---
+	progress_per_press = max(0.3, 1.5 - difficulty * 0.05)
 
-	# Scale the bar's pull-back (higher difficulty → faster decay)
-	decay_speed = 0.3 + difficulty * 0.1
+	# --- Bar fights back: decay speed increases with difficulty ---
+	decay_speed = min(2.0, 0.3 + difficulty * 0.08)
+
+	# --- Max time decreases slightly as difficulty rises ---
+	max_time = max(2.5, 5.0 - difficulty * 0.1)
 
 	progress_bar.max_value = required_progress
 	progress_bar.value = progress
