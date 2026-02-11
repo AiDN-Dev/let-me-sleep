@@ -5,7 +5,8 @@ extends Node2D
 @onready var interruption_manager = $UI/InterruptionManager
 #@onready var dog_window = $UI/InterruptionManager/DogInterruptWindow
 #@onready var fail_panel = $UI/FailPanel
-@onready var sleep_label = $UI/SleepScoreLabel
+@onready var sleep_label: Label = $UI/PlayerUI/SleepScoreLabel
+@onready var time_label: Label = $UI/PlayerUI/TimeLabel
 
 var night_progress := 0
 
@@ -13,6 +14,7 @@ var night_progress := 0
 var rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
+	update_time_and_flavour()
 	rng.randomize()
 
 	# Connect QTE signal
@@ -67,6 +69,7 @@ func _on_qte_finished(success: bool) -> void:
 	if success:
 		SleepManager.adjust_score(5)   # reward for success
 		night_progress += 1
+		update_time_and_flavour()
 		start_sleep()
 	else:
 		SleepManager.adjust_score(-10) # penalty for failure
@@ -99,3 +102,38 @@ func _on_fail_state() -> void:
 # === UI updates ===
 func _update_sleep_label(new_score: int) -> void:
 	sleep_label.text = "Sleep: %d" % new_score
+	
+func get_current_time() -> String:
+	var start_hour = 21
+	var start_minute = 30
+	var total_night_minutes = (7 * 60) + 60 # 10 hours = 600 minutes
+	var max_steps = 20
+	
+	var minutes_per_step = total_night_minutes / max_steps
+	var total_minutes_elapsed = int(night_progress * minutes_per_step)
+	
+	var hour = start_hour + int((start_minute + total_minutes_elapsed) / 60)
+	var minute = (start_minute + total_minutes_elapsed) % 60
+	
+	var period = "AM"
+	if hour >= 24:
+		hour -= 24
+	if hour >= 12:
+		period = "PM"
+		if hour > 12:
+			hour -= 12
+	if hour == 0:
+		hour = 12
+		
+	return "%02d:%02d %s" % [hour, minute, period]
+	
+func get_flavour_text() -> String:
+	if night_progress <= 5:
+		return "The night is quiet."
+	elif night_progress <= 15:
+		return "The house feels restless."
+	else:
+		return "Every creak keeps you awake."
+		
+func update_time_and_flavour():
+	time_label.text = "%s\n%s" % [get_current_time(), get_flavour_text()]
