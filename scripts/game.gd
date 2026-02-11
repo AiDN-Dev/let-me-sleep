@@ -11,6 +11,7 @@ const QTEKey = preload("res://scripts/Managers/qte_key.gd")
 @onready var time_label: Label = $UI/PlayerUI/TimeLabel
 
 var night_progress := 0
+var possible_keys := [KEY_Z, KEY_X, KEY_C, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT]
 
 # Random number generator
 var rng := RandomNumberGenerator.new()
@@ -20,10 +21,10 @@ func _ready() -> void:
 	rng.randomize()
 
 	# Connect QTE signal
-	qte_window.qte_finished.connect(_on_qte_finished)
+	qte_window.qte_finished.connect(Callable(self, "_on_qte_finished"))
 	
 	# Connect Interruption Manager
-	interruption_manager.interruption_finished.connect(_on_interruption_finished)
+	interruption_manager.interruption_finished.connect(Callable(self, "_on_interruption_finished"))
 
 	# Connect dog interruption signal (once)
 	#dog_window.connect("interruption_finished", Callable(self, "_on_dog_finished"))
@@ -49,13 +50,7 @@ func start_sleep() -> void:
 	start_qte()
 
 func start_qte() -> void:
-	var qte_sequence: Array[QTEKey] = [
-		QTEKey.new(KEY_Z, 1.0),
-		QTEKey.new(KEY_X, 1.0),
-		QTEKey.new(KEY_UP, 0.7),
-		QTEKey.new(KEY_DOWN, 0.7)
-	]
-	
+	var qte_sequence: Array[QTEKey] = generate_qte_sequence(4)
 	qte_window.start_qte("Follow the sequence!", qte_sequence)
 
 # === Event handlers ===
@@ -131,3 +126,11 @@ func get_flavour_text() -> String:
 		
 func update_time_and_flavour():
 	time_label.text = "%s\n%s" % [get_current_time(), get_flavour_text()]
+	
+func generate_qte_sequence(length: int) -> Array[QTEKey]:
+	var sequence: Array[QTEKey] = []
+	for i in range(length):
+		var keycode = possible_keys[rng.randi_range(0, possible_keys.size() - 1)]
+		var hold_time = 0.8 + rng.randf() * 0.7  # random hold between 0.8s and 1.5s
+		sequence.append(QTEKey.new(keycode, hold_time))
+	return sequence
