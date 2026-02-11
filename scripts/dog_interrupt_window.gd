@@ -2,6 +2,8 @@ extends Panel
 
 signal interruption_finished
 
+var interruption_type: String = "dog"
+
 @onready var dog = $Dog
 
 func start_interruption():

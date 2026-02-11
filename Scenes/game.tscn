@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://br77gh4vfh0aa" path="res://scripts/Managers/interruption_manager.gd" id="2_wowpa"]
 [ext_resource type="Script" uid="uid://dd70biocct8y1" path="res://scripts/dog_interrupt_window.gd" id="3_wrm1d"]
 [ext_resource type="Script" uid="uid://divahfntlfbln" path="res://scripts/dog.gd" id="4_3dryh"]
+[ext_resource type="Script" uid="uid://csx5xfyx5hop1" path="res://scripts/dialog_box.gd" id="6_i6g32"]
 
 [node name="Game" type="Node2D" unique_id=1645798551]
 script = ExtResource("1_qxrlw")
@@ -104,3 +105,34 @@ offset_bottom = 40.0
 offset_right = 93.0
 offset_bottom = 23.0
 text = "Sleep Score:"
+
+[node name="DialogBox" type="Panel" parent="UI" unique_id=463574828]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -27.5
+offset_right = 200.0
+offset_bottom = 27.5
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("6_i6g32")
+
+[node name="DialogBoxText" type="Label" parent="UI/DialogBox" unique_id=586113497]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2

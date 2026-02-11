@@ -2,12 +2,31 @@ extends Node
 
 signal interruption_finished
 
+@onready var dialog_box: Panel = $"../DialogBox"
 # Add all mini-game nodes here
 @onready var interruptions := [
 	$DogInterruptWindow,
 	#$ToiletInterruptWindow,
 	#$WaterInterruptWindow
 ]
+
+var flavour_text := {
+	"dog": [
+		"This damn dog sleeping all over me...",
+		"Why is he sideways again?",
+		"I swear this dog gets bigger at night."
+	],
+	"toilet": [
+		"Oh no. That feeling.",
+		"This is not ideal timing at all...",
+		"I should have gone before bed."
+	],
+	"water": [
+		"My throat feels like sand.",
+		"Why am i suddenly so thirsy?",
+		"Did I drink anything today?"
+	]
+}
 
 var rng := RandomNumberGenerator.new()
 
@@ -26,9 +45,12 @@ func _ready():
 # Call this to start a random interruption
 func start_random_interruption():
 	var panel = interruptions.pick_random()
-	panel.show()
-	if "start_interruption" in panel:
-		panel.start_interruption()  # call specific mini-game start method if exists
+	# Determine type of interuption
+	var type = panel.interruption_type
+	var text = flavour_text[type].pick_random()
+	await dialog_box.show_text(text, 2.0)
+	
+	panel.start_interruption()
 
 
 func _on_interruption_finished():
