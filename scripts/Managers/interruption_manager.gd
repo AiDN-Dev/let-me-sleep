@@ -6,7 +6,7 @@ signal interruption_finished
 # Add all mini-game nodes here
 @onready var interruptions := [
 	$DogInterruptWindow,
-	#$ToiletInterruptWindow,
+	$ToiletInterruptWindow,
 	#$WaterInterruptWindow
 ]
 
@@ -33,25 +33,29 @@ var rng := RandomNumberGenerator.new()
 func _ready():
 	rng.randomize()
 
-	# Connect all interruption finished signals
+	# Connect all interruption finished signals safely
 	for panel in interruptions:
-		panel.connect("interruption_finished", Callable(self, "_on_interruption_finished"))
+		if panel.has_signal("interruption_finished"):
+			panel.connect("interruption_finished", Callable(self, "_on_interruption_finished"))
+		else:
+			print("Warning: panel ", panel.name, " has no 'interruption_finished' signal!")
 
 	# Hide all panels at start
 	for panel in interruptions:
 		panel.hide()
 
 
+
 # Call this to start a random interruption
-func start_random_interruption():
+func start_random_interruption(difficulty: int = 0):
 	var panel = interruptions.pick_random()
 	# Determine type of interuption
 	var type = panel.interruption_type
 	var text = flavour_text[type].pick_random()
 	await dialog_box.show_text(text, 2.0)
 	
-	panel.start_interruption()
+	panel.start_interruption(difficulty)
 
 
-func _on_interruption_finished():
-	emit_signal("interruption_finished")
+func _on_interruption_finished(success: bool):
+	emit_signal("interruption_finished", success)

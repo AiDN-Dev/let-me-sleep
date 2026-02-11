@@ -3,9 +3,11 @@ extends Node2D
 # === Node references ===
 @onready var qte_window = $UI/QTEWindow
 @onready var interruption_manager = $UI/InterruptionManager
-@onready var dog_window = $UI/InterruptionManager/DogInterruptWindow
+#@onready var dog_window = $UI/InterruptionManager/DogInterruptWindow
 #@onready var fail_panel = $UI/FailPanel
 @onready var sleep_label = $UI/SleepScoreLabel
+
+var night_progress := 0
 
 # Random number generator
 var rng := RandomNumberGenerator.new()
@@ -20,7 +22,9 @@ func _ready() -> void:
 	interruption_manager.connect("interruption_finished", Callable(self, "_on_interruption_finished"))
 
 	# Connect dog interruption signal (once)
-	dog_window.connect("interruption_finished", Callable(self, "_on_dog_finished"))
+	#dog_window.connect("interruption_finished", Callable(self, "_on_dog_finished"))
+	
+	# Connect toilet?
 
 	# Connect SleepManager fail state signal
 	SleepManager.connect("fail_state_triggered", Callable(self, "_on_fail_state"))
@@ -50,6 +54,11 @@ func start_qte() -> void:
 		"DO NOT WAKE UP",
 		"IGNORE THE THOUGHTS"
 	]
+	
+	# Difficulty scaling
+	var base_time: float = 2.0
+	var difficulty_scale: float = 0.1 * night_progress
+	qte_window.hold_time = max(0.6, base_time - difficulty_scale)
 
 	qte_window.start_qte(texts.pick_random(), key)
 
@@ -57,25 +66,34 @@ func start_qte() -> void:
 func _on_qte_finished(success: bool) -> void:
 	if success:
 		SleepManager.adjust_score(5)   # reward for success
+		night_progress += 1
 		start_sleep()
 	else:
 		SleepManager.adjust_score(-10) # penalty for failure
-		interruption_manager.start_random_interruption()
+		if rng.randf() < 0.2 + night_progress * 0.05:
+			interruption_manager.start_random_interruption(night_progress)
+		else:
+			start_sleep()
 
-func _on_dog_finished() -> void:
-	dog_window.hide()
-	SleepManager.adjust_score(5)  # reward for completing dog interrupt
+#func _on_dog_finished() -> void:
+#	dog_window.hide()
+#	SleepManager.adjust_score(5)  # reward for completing dog interrupt
+#	start_sleep()
+
+func _on_interruption_finished(success: bool):
+	if success:
+		SleepManager.adjust_score(5)
+	else:
+		SleepManager.adjust_score(-15)
+		
 	start_sleep()
-
-func _on_interruption_finished():
-	print("Intteruption finished")
 
 # === Fail state ===
 func _on_fail_state() -> void:
 	print("You failed to sleep, now you have to spend the night pondering your choices")
 	# Hide all active panels / stop the sleep loop
-	dog_window.hide()
-	qte_window.hide()
+#	dog_window.hide()
+#	qte_window.hide()
 	#fail_panel.show()
 
 # === UI updates ===

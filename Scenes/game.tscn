@@ -1,11 +1,12 @@
 [gd_scene format=3 uid="uid://bsicf12quws2i"]
 
-[ext_resource type="Script" uid="uid://darwxehgn45y8" path="res://scripts/qte_window.gd" id="1_ebmjs"]
+[ext_resource type="Script" uid="uid://darwxehgn45y8" path="res://scripts/Interruptions/qte_window.gd" id="1_ebmjs"]
 [ext_resource type="Script" uid="uid://cnknpjkg77j4k" path="res://scripts/game.gd" id="1_qxrlw"]
 [ext_resource type="Script" uid="uid://br77gh4vfh0aa" path="res://scripts/Managers/interruption_manager.gd" id="2_wowpa"]
-[ext_resource type="Script" uid="uid://dd70biocct8y1" path="res://scripts/dog_interrupt_window.gd" id="3_wrm1d"]
-[ext_resource type="Script" uid="uid://divahfntlfbln" path="res://scripts/dog.gd" id="4_3dryh"]
-[ext_resource type="Script" uid="uid://csx5xfyx5hop1" path="res://scripts/dialog_box.gd" id="6_i6g32"]
+[ext_resource type="Script" uid="uid://dd70biocct8y1" path="res://scripts/Interruptions/Dog/dog_interrupt_window.gd" id="3_wrm1d"]
+[ext_resource type="Script" uid="uid://divahfntlfbln" path="res://scripts/Interruptions/Dog/dog.gd" id="4_3dryh"]
+[ext_resource type="Script" uid="uid://oqpbsgp48r51" path="res://scripts/Interruptions/Piss1/toilet_interrupt_window.gd" id="5_1l0tm"]
+[ext_resource type="Script" uid="uid://csx5xfyx5hop1" path="res://scripts/UI/dialog_box.gd" id="6_i6g32"]
 
 [node name="Game" type="Node2D" unique_id=1645798551]
 script = ExtResource("1_qxrlw")
@@ -64,6 +65,38 @@ layout_mode = 0
 offset_right = 40.0
 offset_bottom = 23.0
 text = "Move the dog to the floor"
+
+[node name="ToiletInterruptWindow" type="Panel" parent="UI/InterruptionManager" unique_id=13485969]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -80.0
+offset_right = 180.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("5_1l0tm")
+
+[node name="InstructionLabel" type="Label" parent="UI/InterruptionManager/ToiletInterruptWindow" unique_id=663120255]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "MASH SPACE TO HOLD IT"
+
+[node name="ReleifMeter" type="ProgressBar" parent="UI/InterruptionManager/ToiletInterruptWindow" unique_id=398086805]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 128.0
+offset_right = 355.0
+offset_bottom = 155.0
+
+[node name="CountdownTimer" type="Timer" parent="UI/InterruptionManager/ToiletInterruptWindow" unique_id=1893676708]
+wait_time = 4.0
+one_shot = true
 
 [node name="QTEWindow" type="Panel" parent="UI" unique_id=1635344650]
 visible = false
