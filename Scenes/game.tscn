@@ -243,9 +243,13 @@ offset_bottom = 40.0
 layout_mode = 2
 text = "Hold \"Z\" To Relax"
 
+[node name="KeyContainer" type="HBoxContainer" parent="UI/QTEWindow/VBoxContainer" unique_id=1927910727]
+layout_mode = 2
+
 [node name="EventProgressbar" type="ProgressBar" parent="UI/QTEWindow/VBoxContainer" unique_id=1094348982]
 layout_mode = 2
 
 [node name="HintLabel" type="Label" parent="UI/QTEWindow/VBoxContainer" unique_id=528699800]
+visible = false
 layout_mode = 2
 text = "Hint/Timer"

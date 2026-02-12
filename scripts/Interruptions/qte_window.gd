@@ -10,6 +10,7 @@ signal qte_finished(success: bool)
 @onready var instruction_label: Label = $VBoxContainer/InstructionsLabel
 @onready var progress_bar: ProgressBar = $VBoxContainer/EventProgressbar
 @onready var hint_label: Label = $VBoxContainer/HintLabel
+@onready var key_container: HBoxContainer = $VBoxContainer/KeyContainer
 
 var active := false
 var qte_sequence: Array[QTEKey] = []
@@ -26,6 +27,17 @@ func start_qte(text: String, keys: Array[QTEKey]) -> void:
 	current_progress = 0.0
 	current_elapsed = 0.0
 	grace_timer = 0.0
+	
+	for child in key_container.get_children():
+		child.queue_free()
+	
+	for key_obj in qte_sequence:
+		var lbl = Label.new()
+		lbl.text = _get_key_name(key_obj.keycode)
+		lbl.add_theme_color_override("font_color", Color(0.8,0.8,0.8))
+		key_container.add_child(lbl)
+		
+	_update_highlighted_key()
 
 	progress_bar.value = 0
 	progress_bar.max_value = qte_sequence[0].hold_time
@@ -70,6 +82,7 @@ func _process(delta: float) -> void:
 	# Check if current key completed
 	if current_progress >= current_key.hold_time:
 		current_index += 1
+		_update_highlighted_key()
 		if current_index >= qte_sequence.size():
 			_finish(true)
 			return
@@ -112,3 +125,13 @@ func _finish(success: bool) -> void:
 	active = false
 	hide()
 	emit_signal("qte_finished", success)
+	
+func _update_highlighted_key() -> void:
+	for i in range(key_container.get_child_count()):
+		var lbl = key_container.get_child(i)
+		if i < current_index:
+			lbl.add_theme_color_override("font_color", Color(0,0.6, 1))
+		elif i == current_index:
+			lbl.add_theme_color_override("font_color", Color(0,1,0))
+		else:
+			lbl.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))

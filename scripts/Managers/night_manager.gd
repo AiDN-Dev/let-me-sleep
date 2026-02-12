@@ -82,6 +82,6 @@ func apply_night_settings():
 		active_tension_gain = data.tension_gain
 		active_base_interrupt_chance = data.base_interrupt_chance
 	else:
-		active_qte_speed *= 0.97
+		active_qte_speed = max(active_qte_speed * 0.97, 0.5)
 		active_tension_gain *= 1.05
-		active_base_interrupt_chance *= 0.02
+		active_base_interrupt_chance = min(active_base_interrupt_chance * 1.02, 0.9)
