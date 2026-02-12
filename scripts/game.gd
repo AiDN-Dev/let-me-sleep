@@ -3,10 +3,6 @@ extends Node2D
 const QTEKey = preload("res://scripts/Managers/qte_key.gd")
 const NightStatsClass = preload("res://scripts/Managers/night_stats.gd")
 
-const MAX_NIGHT_STEPS = 20 # Number of QTE steps per night
-const MAX_TENSION = 1.0 # Maximum tension before forcing an interruption
-const TENSION_GAIN_PER_SUCCESS = 0.25 # How much tension increases per successful QTE
-
 # Node references
 @onready var night_manager: NightManager = $NightManager
 @onready var qte_window = $UI/QTEWindow
@@ -56,18 +52,21 @@ func _on_qte_finished(success):
 		night_manager.advance_progress()
 		night_manager.add_tension()
 		night_stats.qte_successes += 1
-		if night_manager.is_night_complete():
-			update_time_and_flavour()
-			end_night()
-			return
-		update_time_and_flavour()
-		if night_manager.should_trigger_interruption(0.2, 1, rng):
-			interruption_manager.start_random_interruption(1)
-		else:
-			start_sleep()
-	else:
+	else: 
 		SleepManager.adjust_score(-10)
 		night_stats.qte_failures += 1
+		night_manager.add_tension()
+		
+	if night_manager.is_night_complete():
+		update_time_and_flavour()
+		end_night()
+		return
+	
+	update_time_and_flavour()
+	
+	if night_manager.should_trigger_interruption(rng):
+		interruption_manager.start_random_interruption(night_manager.current_night)
+	else:
 		start_sleep()
 
 # === Interruption finished handler ===
@@ -98,7 +97,7 @@ func end_night():
 	print("Stats - QTE Success:", night_stats.qte_successes, "Fail:", night_stats.qte_failures,
 		"Interruptions:", night_stats.interruptions_triggered, "Success:", night_stats.interruptions_successful,
 		"Fail:", night_stats.interruptions_failed)
-	night_manager.scale_difficulty()
+	night_manager.advance_to_next_night()
 	show_night_summary()
 
 # === Start a new night ===
@@ -124,12 +123,12 @@ func show_night_summary():
 	night_summary_panel.visible = true
 
 # === Generate a QTE sequence for the night ===
-func generate_qte_sequence(length):
-	var seq = []
+func generate_qte_sequence(length) -> Array[QTEKey]:
+	var seq: Array[QTEKey] = []
 	for i in range(length):
 		var key = possible_keys[rng.randi_range(0, possible_keys.size() - 1)]
 		var hold = 0.8 + rng.randf() * 0.7
-		hold *= night_manager.modifiers.qte_speed_multiplier
+		hold *= night_manager.active_qte_speed
 		seq.append(QTEKey.new(key, hold))
 	return seq
 
@@ -140,7 +139,7 @@ func _update_sleep_label(score):
 func get_current_time():
 	var start_min = 21 * 60 + 30
 	var total = 600
-	var step = total / MAX_NIGHT_STEPS
+	var step = total / night_manager.get_max_steps()
 	var minutes = start_min + int(night_manager.night_progress * step)
 	var h = int(minutes / 60) % 24
 	var m = minutes % 60

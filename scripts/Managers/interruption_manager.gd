@@ -2,7 +2,7 @@ extends Node
 
 signal interruption_finished
 
-@onready var dialog_box: Panel = $"../DialogBox"
+@onready var dialog_box: Panel = $"../PlayerUI/DialogBox"
 # Add all mini-game nodes here
 @onready var interruptions := [
 	$DogInterruptWindow,

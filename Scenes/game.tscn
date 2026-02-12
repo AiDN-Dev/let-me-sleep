@@ -12,6 +12,9 @@
 [node name="Game" type="Node2D" unique_id=1645798551]
 script = ExtResource("1_qxrlw")
 
+[node name="NightManager" type="Node" parent="." unique_id=1091395803]
+script = ExtResource("8_v158k")
+
 [node name="Room" type="Node2D" parent="." unique_id=73071899]
 
 [node name="Bed" type="ColorRect" parent="Room" unique_id=209141558]
@@ -53,6 +56,42 @@ offset_top = 23.0
 offset_bottom = 46.0
 grow_horizontal = 0
 text = "blah  blah blah"
+
+[node name="FailPanel" type="Panel" parent="UI/PlayerUI" unique_id=591923084]
+visible = false
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="DialogBox" type="Panel" parent="UI/PlayerUI" unique_id=463574828]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -27.5
+offset_right = 200.0
+offset_bottom = 27.5
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("6_i6g32")
+
+[node name="DialogBoxText" type="Label" parent="UI/PlayerUI/DialogBox" unique_id=586113497]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="NightSummaryPanel" type="Panel" parent="UI/PlayerUI" unique_id=1574124694]
 visible = false
@@ -210,42 +249,3 @@ layout_mode = 2
 [node name="HintLabel" type="Label" parent="UI/QTEWindow/VBoxContainer" unique_id=528699800]
 layout_mode = 2
 text = "Hint/Timer"
-
-[node name="FailPanel" type="Panel" parent="UI" unique_id=591923084]
-visible = false
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="DialogBox" type="Panel" parent="UI" unique_id=463574828]
-visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -27.5
-offset_right = 200.0
-offset_bottom = 27.5
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-script = ExtResource("6_i6g32")
-
-[node name="DialogBoxText" type="Label" parent="UI/DialogBox" unique_id=586113497]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -11.5
-offset_right = 20.0
-offset_bottom = 11.5
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="NightManager" type="Node" parent="." unique_id=1091395803]
-script = ExtResource("8_v158k")
