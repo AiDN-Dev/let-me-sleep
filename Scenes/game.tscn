@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://oqpbsgp48r51" path="res://scripts/Interruptions/Piss1/toilet_interrupt_window.gd" id="5_1l0tm"]
 [ext_resource type="Script" uid="uid://csx5xfyx5hop1" path="res://scripts/UI/dialog_box.gd" id="6_i6g32"]
 [ext_resource type="Script" uid="uid://g1iht08ng4kl" path="res://scripts/Managers/night_manager.gd" id="8_v158k"]
+[ext_resource type="Texture2D" uid="uid://c4csio7eulvcy" path="res://Assets/Number_Ring.png" id="9_h4fw4"]
 
 [node name="Game" type="Node2D" unique_id=1645798551]
 script = ExtResource("1_qxrlw")
@@ -234,14 +235,53 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ebmjs")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/QTEWindow" unique_id=970079883]
+[node name="NumberRing" type="TextureRect" parent="UI/QTEWindow" unique_id=1766316235]
 layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = 247.0
+offset_top = 4.0
+offset_right = 297.0
+offset_bottom = 54.0
+texture = ExtResource("9_h4fw4")
+
+[node name="TimerLabel" type="Label" parent="UI/QTEWindow/NumberRing" unique_id=2079759468]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 33
+text = "5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/QTEWindow" unique_id=970079883]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="InstructionsLabel" type="Label" parent="UI/QTEWindow/VBoxContainer" unique_id=925639954]
 layout_mode = 2
 text = "Hold \"Z\" To Relax"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/QTEWindow/VBoxContainer" unique_id=1704180562]
+layout_mode = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="UI/QTEWindow/VBoxContainer" unique_id=1768876037]
+layout_mode = 2
 
 [node name="KeyContainer" type="HBoxContainer" parent="UI/QTEWindow/VBoxContainer" unique_id=1927910727]
 layout_mode = 2

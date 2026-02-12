@@ -6,13 +6,16 @@ signal qte_finished(success: bool)
 
 @export var max_hold_time: float = 3.0     # max seconds per key
 @export var grace_duration: float = 0.5    # seconds to allow wrong key presses
-
+@export var extra_time_buffer: float = 0.8
 @onready var instruction_label: Label = $VBoxContainer/InstructionsLabel
 @onready var progress_bar: ProgressBar = $VBoxContainer/EventProgressbar
 @onready var hint_label: Label = $VBoxContainer/HintLabel
 @onready var key_container: HBoxContainer = $VBoxContainer/KeyContainer
+@onready var number_ring: TextureRect = $NumberRing
+@onready var timer_label: Label = $NumberRing/TimerLabel
 
 var active := false
+var time_left: float = 0.0
 var qte_sequence: Array[QTEKey] = []
 var current_index := 0
 var current_progress := 0.0
@@ -24,6 +27,8 @@ func start_qte(text: String, keys: Array[QTEKey]) -> void:
 	instruction_label.text = text
 	qte_sequence = keys
 	current_index = 0
+	time_left = qte_sequence[current_index].hold_time + extra_time_buffer
+	_update_timer_display()
 	current_progress = 0.0
 	current_elapsed = 0.0
 	grace_timer = 0.0
@@ -55,7 +60,7 @@ func _process(delta: float) -> void:
 
 	# Update elapsed time for this key
 	current_elapsed += delta
-
+	
 	# Fail if max hold time exceeded
 	if current_elapsed > max_hold_time:
 		_finish(false)
@@ -68,12 +73,20 @@ func _process(delta: float) -> void:
 			_finish(false)
 			return
 
+	time_left -= delta
+	if time_left <= 0:
+		_finish(false)
+		return
+	_update_timer_display()
+		
 	# Update progress for holding the correct key
 	if Input.is_key_pressed(current_key.keycode):
 		current_progress += delta
+		_update_timer_display()
 		grace_timer = 0  # pressing correct key cancels any grace timer
 	else:
 		current_progress -= delta  # decay if not holding
+		_update_timer_display()
 
 	# Clamp progress
 	current_progress = clamp(current_progress, 0, current_key.hold_time)
@@ -93,6 +106,9 @@ func _process(delta: float) -> void:
 		progress_bar.max_value = qte_sequence[current_index].hold_time
 		progress_bar.value = 0
 		hint_label.text = "Hold: %s" % _get_key_name(qte_sequence[current_index].keycode)
+		
+		time_left = qte_sequence[current_index].hold_time + extra_time_buffer
+		_update_timer_display()
 
 # === Handle key presses (fail on wrong, with grace) ===
 func _input(event: InputEvent) -> void:
@@ -135,3 +151,6 @@ func _update_highlighted_key() -> void:
 			lbl.add_theme_color_override("font_color", Color(0,1,0))
 		else:
 			lbl.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+			
+func _update_timer_display() -> void:
+	timer_label.text = str(ceil(max(time_left,0)))
