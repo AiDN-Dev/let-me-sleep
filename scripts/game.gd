@@ -1,6 +1,7 @@
 extends Node2D
 
 const QTEKey = preload("res://scripts/Managers/qte_key.gd")
+const NightStatsClass = preload("res://scripts/Managers/night_stats.gd")
 const MAX_NIGHT_STEPS: int = 20
 const MAX_TENSION: float = 1.0
 const TENSION_GAIN_PER_SUCCESS: float = 0.25
@@ -20,9 +21,11 @@ var rng := RandomNumberGenerator.new()
 var difficulty_level: int = 1
 var tension: float = 0.0
 var current_night: int = 1
+var night_stats : NightStats
 
 func _ready() -> void:
 	update_time_and_flavour()
+	night_stats = NightStatsClass.new()
 	rng.randomize()
 
 	# Connect QTE signal
@@ -64,6 +67,7 @@ func _on_qte_finished(success: bool) -> void:
 		SleepManager.adjust_score(5)   # reward for success
 		night_progress += 1
 		tension += TENSION_GAIN_PER_SUCCESS
+		night_stats.qte_successes += 1
 		if night_progress >= MAX_NIGHT_STEPS:
 			update_time_and_flavour()
 			end_night()
@@ -76,14 +80,17 @@ func _on_qte_finished(success: bool) -> void:
 			start_sleep()
 	else:
 		SleepManager.adjust_score(-10) # penalty for failure
+		night_stats.qte_failures += 1
 		start_sleep()
 		
 func _on_interruption_finished(success: bool):
 	if success:
 		SleepManager.adjust_score(5)
+		night_stats.interruptions_successful += 1
 	else:
 		SleepManager.adjust_score(-15)
-		
+		night_stats.interruptions_failed += 1
+	night_stats.interruptions_triggered += 1
 	start_sleep()
 
 # === Fail state ===
@@ -135,8 +142,15 @@ func generate_qte_sequence(length: int) -> Array[QTEKey]:
 	
 func end_night() -> void:
 	night_active = false
+	
 	print("Night Complete!")
 	print("Final Sleep Score: ", SleepManager.sleep_score)
+	print("Night Stats:")
+	print("QTE Successes: ", night_stats.qte_successes)
+	print("QTE Failures: ", night_stats.qte_failures)
+	print("Interruptions Triggered: ", night_stats.interruptions_triggered)
+	print("Interruptions Success: ", night_stats.interruptions_successful)
+	print("Interruptions Failed: ", night_stats.interruptions_failed)
 	
 	difficulty_level += 1
 	current_night += 1
@@ -151,6 +165,8 @@ func start_new_night() -> void:
 	night_progress = 0
 	tension = 0
 	night_active = true
+	
+	night_stats._reset()
 	
 	SleepManager.sleep_score = 100 
 	_update_sleep_label(SleepManager.sleep_score)
