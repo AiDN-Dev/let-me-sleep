@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://divahfntlfbln" path="res://scripts/Interruptions/Dog/dog.gd" id="4_3dryh"]
 [ext_resource type="Script" uid="uid://oqpbsgp48r51" path="res://scripts/Interruptions/Piss1/toilet_interrupt_window.gd" id="5_1l0tm"]
 [ext_resource type="Script" uid="uid://csx5xfyx5hop1" path="res://scripts/UI/dialog_box.gd" id="6_i6g32"]
+[ext_resource type="Script" uid="uid://g1iht08ng4kl" path="res://scripts/Managers/night_manager.gd" id="8_v158k"]
 
 [node name="Game" type="Node2D" unique_id=1645798551]
 script = ExtResource("1_qxrlw")
@@ -245,3 +246,6 @@ offset_right = 20.0
 offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="NightManager" type="Node" parent="." unique_id=1091395803]
+script = ExtResource("8_v158k")

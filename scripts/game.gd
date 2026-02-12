@@ -2,15 +2,15 @@ extends Node2D
 
 const QTEKey = preload("res://scripts/Managers/qte_key.gd")
 const NightStatsClass = preload("res://scripts/Managers/night_stats.gd")
-const MAX_NIGHT_STEPS: int = 20
-const MAX_TENSION: float = 1.0
-const TENSION_GAIN_PER_SUCCESS: float = 0.25
 
-# === Node references ===
+const MAX_NIGHT_STEPS = 20 # Number of QTE steps per night
+const MAX_TENSION = 1.0 # Maximum tension before forcing an interruption
+const TENSION_GAIN_PER_SUCCESS = 0.25 # How much tension increases per successful QTE
+
+# Node references
+@onready var night_manager: NightManager = $NightManager
 @onready var qte_window = $UI/QTEWindow
 @onready var interruption_manager = $UI/InterruptionManager
-#@onready var dog_window = $UI/InterruptionManager/DogInterruptWindow
-#@onready var fail_panel = $UI/FailPanel
 @onready var sleep_label: Label = $UI/PlayerUI/SleepScoreLabel
 @onready var time_label: Label = $UI/PlayerUI/TimeLabel
 @onready var night_summary_panel: Panel = $UI/PlayerUI/NightSummaryPanel
@@ -20,167 +20,146 @@ const TENSION_GAIN_PER_SUCCESS: float = 0.25
 @onready var interruptions_label: Label = $UI/PlayerUI/NightSummaryPanel/InterruptionsLabel
 @onready var continue_button: Button = $UI/PlayerUI/NightSummaryPanel/ContinueButton
 
-var night_progress := 0
-var night_active: bool = true
-var possible_keys := [KEY_Z, KEY_X, KEY_C, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT]
-var rng := RandomNumberGenerator.new()
-var difficulty_level: int = 1
-var tension: float = 0.0
-var current_night: int = 1
-var night_stats : NightStats
+# Game state
+var night_active = true
+var possible_keys = [KEY_Z, KEY_X, KEY_C, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT]
+var rng = RandomNumberGenerator.new()
+var night_stats: NightStats
 
-func _ready() -> void:
-	update_time_and_flavour()
-	night_stats = NightStatsClass.new()
+func _ready():
 	rng.randomize()
-	# Connect QTE signal
+	night_stats = NightStatsClass.new()
+	# Connect signals
 	qte_window.qte_finished.connect(Callable(self, "_on_qte_finished"))
-	# Connect Interruption Manager
 	interruption_manager.interruption_finished.connect(Callable(self, "_on_interruption_finished"))
-	# Connect SleepManager fail state signal
 	SleepManager.connect("fail_state_triggered", Callable(self, "_on_fail_state"))
-	# Connect SleepManager score change signal
 	SleepManager.connect("score_changed", Callable(self, "_update_sleep_label"))
 	continue_button.pressed.connect(Callable(self, "_on_continue_to_next_night"))
-	# Initialize UI
-	#fail_panel.hide()
 	_update_sleep_label(SleepManager.sleep_score)
-	# Start first sleep cycle
+	update_time_and_flavour()
+	night_summary_panel.visible = false
 	start_sleep()
 
-# === Sleep loop ===
-func start_sleep() -> void:
-	await get_tree().create_timer(1.0).timeout
+# === Sleep / QTE loop ===
+func start_sleep():
+	await get_tree().create_timer(1).timeout
 	start_qte()
 
-func start_qte() -> void:
-	var qte_sequence: Array[QTEKey] = generate_qte_sequence(4)
-	qte_window.start_qte("Follow the sequence!", qte_sequence)
+func start_qte():
+	var sequence = generate_qte_sequence(4)
+	qte_window.start_qte("Follow the sequence!", sequence)
 
-# === Event handlers ===
-func _on_qte_finished(success: bool) -> void:
+# === QTE finished handler ===
+func _on_qte_finished(success):
 	if success:
-		SleepManager.adjust_score(5)   # reward for success
-		night_progress += 1
-		tension = clamp(tension + TENSION_GAIN_PER_SUCCESS, 0, MAX_TENSION)
+		SleepManager.adjust_score(5)
+		night_manager.advance_progress()
+		night_manager.add_tension()
 		night_stats.qte_successes += 1
-		if night_progress >= MAX_NIGHT_STEPS:
+		if night_manager.is_night_complete():
 			update_time_and_flavour()
 			end_night()
 			return
 		update_time_and_flavour()
-		var interruption_chance = 0.2 + (night_progress * 0.05) + ((difficulty_level - 1) * 0.05)
-		if tension >= MAX_TENSION or rng.randf() < interruption_chance:
-			var temp_tension = tension
-			tension = 0
-			interruption_manager.start_random_interruption(difficulty_level)
+		if night_manager.should_trigger_interruption(0.2, 1, rng):
+			interruption_manager.start_random_interruption(1)
 		else:
 			start_sleep()
 	else:
-		SleepManager.adjust_score(-10) # penalty for failure
+		SleepManager.adjust_score(-10)
 		night_stats.qte_failures += 1
 		start_sleep()
-		
-func _on_interruption_finished(success: bool):
+
+# === Interruption finished handler ===
+func _on_interruption_finished(success):
+	night_stats.interruptions_triggered += 1
 	if success:
 		SleepManager.adjust_score(5)
 		night_stats.interruptions_successful += 1
 	else:
 		SleepManager.adjust_score(-15)
 		night_stats.interruptions_failed += 1
-	night_stats.interruptions_triggered += 1
 	start_sleep()
 
-# === Fail state ===
-func _on_fail_state() -> void:
-	print("You failed to sleep, now you have to spend the night pondering your choices")
-	# Hide all active panels / stop the sleep loop
-#	dog_window.hide()
-#	qte_window.hide()
-	#fail_panel.show()
+# === Fail state triggered by SleepManager ===
+func _on_fail_state():
+	print("You failed to sleep.")
+	# fail_panel.show()
 
-# === UI updates ===
-func _update_sleep_label(new_score: int) -> void:
-	sleep_label.text = "Sleep: %d" % new_score
-	
-func get_current_time() -> String:
-	var start_minutes = (21 * 60) + 30 # 9:30PM in minutes
-	var total_night_minutes = 600 # 10 hours
-	var minutes_per_step = total_night_minutes / MAX_NIGHT_STEPS
-	var current_total_minutes = start_minutes + int(night_progress * minutes_per_step)
-	var hour = int(current_total_minutes / 60) % 24
-	var minute = current_total_minutes % 60
-	var period = "AM"
-	if hour >= 12:
-		period = "PM"
-		if hour > 12:
-			hour -= 12
-	elif hour == 0:
-		hour = 12
-	return "%02d:%02d %s" % [hour, minute, period]
-	
-func get_flavour_text() -> String:
-	if night_progress <= 5:
-		return "The night is quiet."
-	elif night_progress <= 15:
-		return "The house feels restless."
-	else:
-		return "Every creak keeps you awake."
-		
-func update_time_and_flavour():
-	time_label.text = "%s\n%s" % [get_current_time(), get_flavour_text()]
-	
-func generate_qte_sequence(length: int) -> Array[QTEKey]:
-	var sequence: Array[QTEKey] = []
-	for i in range(length):
-		var keycode = possible_keys[rng.randi_range(0, possible_keys.size() - 1)]
-		var base_hold_time = 0.8 + rng.randf() * 0.7
-		var difficulty_modifier = 1.0 - (difficulty_level - 1) * 0.05
-		base_hold_time *= clamp(difficulty_modifier, 0.5, 1.0)
-		sequence.append(QTEKey.new(keycode, base_hold_time))
-	return sequence
-	
-func end_night() -> void:
+# === Night summary continue button ===
+func _on_continue_to_next_night():
+	night_summary_panel.visible = false
+	start_new_night()
+
+# === End of night ===
+func end_night():
 	night_active = false
-	
-	print("Night Complete!")
-	print("Final Sleep Score: ", SleepManager.sleep_score)
-	print("Night Stats:")
-	print("QTE Successes: ", night_stats.qte_successes)
-	print("QTE Failures: ", night_stats.qte_failures)
-	print("Interruptions Triggered: ", night_stats.interruptions_triggered)
-	print("Interruptions Success: ", night_stats.interruptions_successful)
-	print("Interruptions Failed: ", night_stats.interruptions_failed)
-	
-	difficulty_level += 1
-	current_night += 1
+	print("Night Complete! Sleep:", SleepManager.sleep_score)
+	print("Stats - QTE Success:", night_stats.qte_successes, "Fail:", night_stats.qte_failures,
+		"Interruptions:", night_stats.interruptions_triggered, "Success:", night_stats.interruptions_successful,
+		"Fail:", night_stats.interruptions_failed)
+	night_manager.scale_difficulty()
 	show_night_summary()
-	
-func start_new_night() -> void:
-	print("Starting Night ", current_night)
-	
-	night_progress = 0
-	tension = 0
+
+# === Start a new night ===
+func start_new_night():
+	print("Starting Night", night_manager.current_night)
+	night_manager.reset_night()
 	night_active = true
-	
 	night_stats._reset()
-	
-	SleepManager.sleep_score = 100 
+	SleepManager.sleep_score = 100
 	_update_sleep_label(SleepManager.sleep_score)
-	
 	update_time_and_flavour()
 	start_sleep()
-	
+
+# === Show night summary panel ===
 func show_night_summary():
 	qte_success_label.text = "QTE Successes: %d" % night_stats.qte_successes
 	qte_fail_label.text = "QTE Failures: %d" % night_stats.qte_failures
-	interruptions_label.text = "Interruptions Triggered: %d (Success: %d, Fail: %d)" % [
+	interruptions_label.text = "Interruptions: %d (Success: %d, Fail: %d)" % [
 		night_stats.interruptions_triggered,
 		night_stats.interruptions_successful,
 		night_stats.interruptions_failed
 	]
 	night_summary_panel.visible = true
-	
-func _on_continue_to_next_night():
-	night_summary_panel.visible = false
-	start_new_night()
+
+# === Generate a QTE sequence for the night ===
+func generate_qte_sequence(length):
+	var seq = []
+	for i in range(length):
+		var key = possible_keys[rng.randi_range(0, possible_keys.size() - 1)]
+		var hold = 0.8 + rng.randf() * 0.7
+		hold *= night_manager.modifiers.qte_speed_multiplier
+		seq.append(QTEKey.new(key, hold))
+	return seq
+
+# === UI update helpers ===
+func _update_sleep_label(score):
+	sleep_label.text = "Sleep: %d" % score
+
+func get_current_time():
+	var start_min = 21 * 60 + 30
+	var total = 600
+	var step = total / MAX_NIGHT_STEPS
+	var minutes = start_min + int(night_manager.night_progress * step)
+	var h = int(minutes / 60) % 24
+	var m = minutes % 60
+	var period = "AM"
+	if h >= 12:
+		period = "PM"
+		if h > 12:
+			h -= 12
+	elif h == 0:
+		h = 12
+	return "%02d:%02d %s" % [h, m, period]
+
+func get_flavour_text():
+	if night_manager.night_progress <= 5:
+		return "The night is quiet."
+	elif night_manager.night_progress <= 15:
+		return "The house feels restless."
+	else:
+		return "Every creak keeps you awake."
+
+func update_time_and_flavour():
+	time_label.text = "%s\n%s" % [get_current_time(), get_flavour_text()]
