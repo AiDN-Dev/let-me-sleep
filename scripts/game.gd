@@ -66,14 +66,16 @@ func _on_qte_finished(success: bool) -> void:
 	if success:
 		SleepManager.adjust_score(5)   # reward for success
 		night_progress += 1
-		tension += TENSION_GAIN_PER_SUCCESS
+		tension = clamp(tension + TENSION_GAIN_PER_SUCCESS, 0, MAX_TENSION)
 		night_stats.qte_successes += 1
 		if night_progress >= MAX_NIGHT_STEPS:
 			update_time_and_flavour()
 			end_night()
 			return
 		update_time_and_flavour()
-		if tension >= MAX_TENSION:
+		var interruption_chance = 0.2 + (night_progress * 0.05) + ((difficulty_level - 1) * 0.05)
+		if tension >= MAX_TENSION or rng.randf() < interruption_chance:
+			var temp_tension = tension
 			tension = 0
 			interruption_manager.start_random_interruption(difficulty_level)
 		else:
@@ -136,8 +138,10 @@ func generate_qte_sequence(length: int) -> Array[QTEKey]:
 	var sequence: Array[QTEKey] = []
 	for i in range(length):
 		var keycode = possible_keys[rng.randi_range(0, possible_keys.size() - 1)]
-		var hold_time = 0.8 + rng.randf() * 0.7  # random hold between 0.8s and 1.5s
-		sequence.append(QTEKey.new(keycode, hold_time))
+		var base_hold_time = 0.8 + rng.randf() * 0.7
+		var difficulty_modifier = 1.0 - (difficulty_level - 1) * 0.05
+		base_hold_time *= clamp(difficulty_modifier, 0.5, 1.0)
+		sequence.append(QTEKey.new(keycode, base_hold_time))
 	return sequence
 	
 func end_night() -> void:
