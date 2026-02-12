@@ -1,6 +1,9 @@
 extends Node2D
 
 const QTEKey = preload("res://scripts/Managers/qte_key.gd")
+const MAX_NIGHT_STEPS: int = 20
+const MAX_TENSION: float = 1.0
+const TENSION_GAIN_PER_SUCCESS: float = 0.25
 
 # === Node references ===
 @onready var qte_window = $UI/QTEWindow
@@ -11,10 +14,12 @@ const QTEKey = preload("res://scripts/Managers/qte_key.gd")
 @onready var time_label: Label = $UI/PlayerUI/TimeLabel
 
 var night_progress := 0
+var night_active: bool = true
 var possible_keys := [KEY_Z, KEY_X, KEY_C, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT]
-
-# Random number generator
 var rng := RandomNumberGenerator.new()
+var difficulty_level: int = 1
+var tension: float = 0.0
+var current_night: int = 1
 
 func _ready() -> void:
 	update_time_and_flavour()
@@ -58,20 +63,21 @@ func _on_qte_finished(success: bool) -> void:
 	if success:
 		SleepManager.adjust_score(5)   # reward for success
 		night_progress += 1
+		tension += TENSION_GAIN_PER_SUCCESS
+		if night_progress >= MAX_NIGHT_STEPS:
+			update_time_and_flavour()
+			end_night()
+			return
 		update_time_and_flavour()
-		start_sleep()
-	else:
-		SleepManager.adjust_score(-10) # penalty for failure
-		if rng.randf() < 0.2 + night_progress * 0.05:
-			interruption_manager.start_random_interruption(night_progress)
+		if tension >= MAX_TENSION:
+			tension = 0
+			interruption_manager.start_random_interruption(difficulty_level)
 		else:
 			start_sleep()
-
-#func _on_dog_finished() -> void:
-#	dog_window.hide()
-#	SleepManager.adjust_score(5)  # reward for completing dog interrupt
-#	start_sleep()
-
+	else:
+		SleepManager.adjust_score(-10) # penalty for failure
+		start_sleep()
+		
 func _on_interruption_finished(success: bool):
 	if success:
 		SleepManager.adjust_score(5)
@@ -93,27 +99,19 @@ func _update_sleep_label(new_score: int) -> void:
 	sleep_label.text = "Sleep: %d" % new_score
 	
 func get_current_time() -> String:
-	var start_hour = 21
-	var start_minute = 30
-	var total_night_minutes = (7 * 60) + 60 # 10 hours = 600 minutes
-	var max_steps = 20
-	
-	var minutes_per_step = total_night_minutes / max_steps
-	var total_minutes_elapsed = int(night_progress * minutes_per_step)
-	
-	var hour = start_hour + int((start_minute + total_minutes_elapsed) / 60)
-	var minute = (start_minute + total_minutes_elapsed) % 60
-	
+	var start_minutes = (21 * 60) + 30 # 9:30PM in minutes
+	var total_night_minutes = 600 # 10 hours
+	var minutes_per_step = total_night_minutes / MAX_NIGHT_STEPS
+	var current_total_minutes = start_minutes + int(night_progress * minutes_per_step)
+	var hour = int(current_total_minutes / 60) % 24
+	var minute = current_total_minutes % 60
 	var period = "AM"
-	if hour >= 24:
-		hour -= 24
 	if hour >= 12:
 		period = "PM"
 		if hour > 12:
 			hour -= 12
-	if hour == 0:
+	elif hour == 0:
 		hour = 12
-		
 	return "%02d:%02d %s" % [hour, minute, period]
 	
 func get_flavour_text() -> String:
@@ -134,3 +132,28 @@ func generate_qte_sequence(length: int) -> Array[QTEKey]:
 		var hold_time = 0.8 + rng.randf() * 0.7  # random hold between 0.8s and 1.5s
 		sequence.append(QTEKey.new(keycode, hold_time))
 	return sequence
+	
+func end_night() -> void:
+	night_active = false
+	print("Night Complete!")
+	print("Final Sleep Score: ", SleepManager.sleep_score)
+	
+	difficulty_level += 1
+	current_night += 1
+	
+	await get_tree().create_timer(2.0).timeout
+	
+	start_new_night()
+	
+func start_new_night() -> void:
+	print("Starting Night ", current_night)
+	
+	night_progress = 0
+	tension = 0
+	night_active = true
+	
+	SleepManager.sleep_score = 100 
+	_update_sleep_label(SleepManager.sleep_score)
+	
+	update_time_and_flavour()
+	start_sleep()
