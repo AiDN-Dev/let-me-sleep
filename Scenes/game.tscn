@@ -53,6 +53,60 @@ offset_bottom = 46.0
 grow_horizontal = 0
 text = "blah  blah blah"
 
+[node name="NightSummaryPanel" type="Panel" parent="UI/PlayerUI" unique_id=1574124694]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 480.0
+offset_bottom = 130.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TitleLabel" type="Label" parent="UI/PlayerUI/NightSummaryPanel" unique_id=1345482203]
+layout_mode = 0
+offset_left = 187.0
+offset_top = 4.0
+offset_right = 308.0
+offset_bottom = 27.0
+text = "Night Summary"
+
+[node name="QTESuccessLabel" type="Label" parent="UI/PlayerUI/NightSummaryPanel" unique_id=151999047]
+layout_mode = 0
+offset_left = 9.0
+offset_top = 83.0
+offset_right = 129.0
+offset_bottom = 106.0
+text = "QTE Successes: "
+
+[node name="QTEFailLabel" type="Label" parent="UI/PlayerUI/NightSummaryPanel" unique_id=1633645105]
+layout_mode = 0
+offset_left = 9.0
+offset_top = 58.0
+offset_right = 114.0
+offset_bottom = 81.0
+text = "QTE Failures: "
+
+[node name="InterruptionsLabel" type="Label" parent="UI/PlayerUI/NightSummaryPanel" unique_id=1254871569]
+layout_mode = 0
+offset_left = 7.0
+offset_top = 32.0
+offset_right = 119.0
+offset_bottom = 55.0
+text = "Interruptions: "
+
+[node name="ContinueButton" type="Button" parent="UI/PlayerUI/NightSummaryPanel" unique_id=641408300]
+layout_mode = 0
+offset_left = 309.0
+offset_top = 115.0
+offset_right = 496.0
+offset_bottom = 146.0
+text = "Continue to Next Night"
+
 [node name="InterruptionManager" type="Node" parent="UI" unique_id=225997389]
 script = ExtResource("2_wowpa")
 

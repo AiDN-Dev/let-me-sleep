@@ -13,6 +13,12 @@ const TENSION_GAIN_PER_SUCCESS: float = 0.25
 #@onready var fail_panel = $UI/FailPanel
 @onready var sleep_label: Label = $UI/PlayerUI/SleepScoreLabel
 @onready var time_label: Label = $UI/PlayerUI/TimeLabel
+@onready var night_summary_panel: Panel = $UI/PlayerUI/NightSummaryPanel
+@onready var night_title_label: Label = $UI/PlayerUI/NightSummaryPanel/TitleLabel
+@onready var qte_success_label: Label = $UI/PlayerUI/NightSummaryPanel/QTESuccessLabel
+@onready var qte_fail_label: Label = $UI/PlayerUI/NightSummaryPanel/QTEFailLabel
+@onready var interruptions_label: Label = $UI/PlayerUI/NightSummaryPanel/InterruptionsLabel
+@onready var continue_button: Button = $UI/PlayerUI/NightSummaryPanel/ContinueButton
 
 var night_progress := 0
 var night_active: bool = true
@@ -27,28 +33,18 @@ func _ready() -> void:
 	update_time_and_flavour()
 	night_stats = NightStatsClass.new()
 	rng.randomize()
-
 	# Connect QTE signal
 	qte_window.qte_finished.connect(Callable(self, "_on_qte_finished"))
-	
 	# Connect Interruption Manager
 	interruption_manager.interruption_finished.connect(Callable(self, "_on_interruption_finished"))
-
-	# Connect dog interruption signal (once)
-	#dog_window.connect("interruption_finished", Callable(self, "_on_dog_finished"))
-	
-	# Connect toilet?
-
 	# Connect SleepManager fail state signal
 	SleepManager.connect("fail_state_triggered", Callable(self, "_on_fail_state"))
-
 	# Connect SleepManager score change signal
 	SleepManager.connect("score_changed", Callable(self, "_update_sleep_label"))
-
+	continue_button.pressed.connect(Callable(self, "_on_continue_to_next_night"))
 	# Initialize UI
 	#fail_panel.hide()
 	_update_sleep_label(SleepManager.sleep_score)
-
 	# Start first sleep cycle
 	start_sleep()
 
@@ -158,10 +154,7 @@ func end_night() -> void:
 	
 	difficulty_level += 1
 	current_night += 1
-	
-	await get_tree().create_timer(2.0).timeout
-	
-	start_new_night()
+	show_night_summary()
 	
 func start_new_night() -> void:
 	print("Starting Night ", current_night)
@@ -177,3 +170,17 @@ func start_new_night() -> void:
 	
 	update_time_and_flavour()
 	start_sleep()
+	
+func show_night_summary():
+	qte_success_label.text = "QTE Successes: %d" % night_stats.qte_successes
+	qte_fail_label.text = "QTE Failures: %d" % night_stats.qte_failures
+	interruptions_label.text = "Interruptions Triggered: %d (Success: %d, Fail: %d)" % [
+		night_stats.interruptions_triggered,
+		night_stats.interruptions_successful,
+		night_stats.interruptions_failed
+	]
+	night_summary_panel.visible = true
+	
+func _on_continue_to_next_night():
+	night_summary_panel.visible = false
+	start_new_night()
