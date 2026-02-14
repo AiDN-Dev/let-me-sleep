@@ -56,6 +56,44 @@ var night_data = {
 	}
 }
 
+var night_debuffs = {
+	1: {
+		"hold_time_multiplier": 1.0,
+		"extra_time_buffer_multiplier": 1.0,
+		"decay_multiplier": 1.0
+	},
+	2: {
+		"hold_time_multiplier": 1.0,
+		"extra_time_buffer_multiplier": 0.9,
+		"decay_multiplier": 1.05
+	},
+	3: {
+		"hold_time_multiplier": 1.05,
+		"extra_time_buffer_multiplier": 0.9,
+		"decay_multiplier": 1.1
+	},
+	4: {
+		"hold_time_multiplier": 1.1,
+		"extra_time_buffer_multiplier": 0.9,
+		"decay_multiplier": 1.15
+	},
+	5: {
+		"hold_time_multiplier": 1.15,
+		"extra_time_buffer_multiplier": 0.85,
+		"decay_multiplier": 1.2
+	},
+	6: {
+		"hold_time_multiplier": 1.2,
+		"extra_timer_buffer_multiplier": 0.8,
+		"decay_multiplier": 1.25
+	},
+	7: {
+		"hold_time_multiplier": 1.3,
+		"extra_time_buffer_multiplier": 0.75,
+		"decay_multiplier": 1.35
+	}
+}
+
 func reset_night():
 	night_progress = 0
 	tension = 0.0
