@@ -42,12 +42,22 @@ func start_sleep():
 	start_qte()
 
 func start_qte():
+	# Generate QTE sequence
 	var sequence = generate_qte_sequence(4)
-	var debuffs = DebuffManager.get_random_debuffs(rng.randi_range(1, 2))
-	var combined = DebuffManager.combine_debuffs(debuffs)
 	
-	var debuff_names = String(", ").join(combined["names"])
-	qte_window.start_qte("Follow the sequence!", sequence)
+	# Get 1 or 2 random debuffs, allow chance to combine
+	var num_debuffs = rng.randi_range(1, 2)
+	var debuffs = DebuffManager.get_random_debuffs(num_debuffs, true)
+	
+	# Print flavor text to let player know what's active
+	if debuffs.get("names", []).size() > 1:
+		print("Oh no! Debuffs combined")
+	else:
+		print("Debuff applied: ", debuffs["names"][0])
+	
+	# Start the QTE sequence and pass debuffs dictionary
+	qte_window.start_qte("Follow the sequence!", sequence, debuffs)
+
 
 # === QTE finished handler ===
 func _on_qte_finished(success):

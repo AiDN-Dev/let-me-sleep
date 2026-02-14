@@ -14,7 +14,7 @@ var possible_debuffs := [
 	},
 	{
 		"name": "Smaller Buffer",
-		"hold_time_multipler": 1.0,
+		"hold_time_multiplier": 1.0,
 		"extra_time_buffer_multiplier": 0.7,
 		"decay_multiplier": 1.0
 	},
@@ -31,7 +31,7 @@ var rng := RandomNumberGenerator.new()
 func _ready():
 	rng.randomize()
 	
-func get_random_debuffs(num_debuffs: int = 1) -> Array:
+func get_random_debuffs(num_debuffs: int = 1, allow_combination: bool = true) -> Dictionary:
 	var selected := []
 	var pool := possible_debuffs.duplicate()
 	for i in range(num_debuffs):
@@ -40,7 +40,17 @@ func get_random_debuffs(num_debuffs: int = 1) -> Array:
 		var debuff = pool.pick_random()
 		selected.append(debuff)
 		pool.erase(debuff)
-	return selected
+
+	var combined = {}
+	if allow_combination and selected.size() > 1 and randf() < 0.5:
+		combined = combine_debuffs(selected)
+		print("Oh no! Debuffs combined: " + String(", ").join(combined["names"]))
+	else:
+		combined = combine_debuffs([selected[0]])
+		print("Single debuff applied: " + String(combined["names"][0]))
+
+	return combined
+
 	
 func combine_debuffs(debuffs: Array) -> Dictionary:
 	var result = {
