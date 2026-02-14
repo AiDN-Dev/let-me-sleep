@@ -43,6 +43,10 @@ func start_sleep():
 
 func start_qte():
 	var sequence = generate_qte_sequence(4)
+	var debuffs = DebuffManager.get_random_debuffs(rng.randi_range(1, 2))
+	var combined = DebuffManager.combine_debuffs(debuffs)
+	
+	var debuff_names = String(", ").join(combined["names"])
 	qte_window.start_qte("Follow the sequence!", sequence)
 
 # === QTE finished handler ===

@@ -21,14 +21,18 @@ var current_index := 0
 var current_progress := 0.0
 var current_elapsed := 0.0
 var grace_timer := 0.0
+var active_debuffs := {}
 
 # === Start a new QTE sequence ===
-func start_qte(text: String, keys: Array[QTEKey]) -> void:
+func start_qte(text: String, keys: Array[QTEKey], debuffs := {}, active_debuffs = debuffs) -> void:
 	instruction_label.text = text
 	qte_sequence = keys
 	current_index = 0
-	time_left = qte_sequence[current_index].hold_time + extra_time_buffer
-	_update_timer_display()
+	
+	var hold_multiplier = debuffs.get("hold_time_multiplier", 1.0)
+	var buffer_multiplier = debuffs.get("extra_time_buffer_multiplier", 1.0)
+	var decay_multiplier = debuffs.get("decay_multiplier", 1.0)
+
 	current_progress = 0.0
 	current_elapsed = 0.0
 	grace_timer = 0.0
@@ -37,6 +41,7 @@ func start_qte(text: String, keys: Array[QTEKey]) -> void:
 		child.queue_free()
 	
 	for key_obj in qte_sequence:
+		key_obj.hold_time *= hold_multiplier
 		var lbl = Label.new()
 		lbl.text = _get_key_name(key_obj.keycode)
 		lbl.add_theme_color_override("font_color", Color(0.8,0.8,0.8))
@@ -47,6 +52,9 @@ func start_qte(text: String, keys: Array[QTEKey]) -> void:
 	progress_bar.value = 0
 	progress_bar.max_value = qte_sequence[0].hold_time
 	hint_label.text = "Hold: %s" % _get_key_name(qte_sequence[0].keycode)
+	
+	time_left = qte_sequence[current_index].hold_time + extra_time_buffer
+	_update_timer_display()
 
 	active = true
 	show()

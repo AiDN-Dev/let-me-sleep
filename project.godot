@@ -17,6 +17,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 SleepManager="*uid://bijbyrd34bt8u"
+DebuffManager="*uid://xgoov3eu5w7p"
 
 [physics]
 
