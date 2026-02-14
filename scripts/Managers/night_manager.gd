@@ -20,24 +20,39 @@ var modifiers = {
 
 var night_data = {
 	1: {
-		"qte_speed": 1.0,
-		"tension_gain": 1.0,
-		"base_interrupt_chance": 0.15
+		"qte_speed": 0.9,
+		"tension_gain": 0.8,
+		"base_interrupt_chance": 0.1
 	},
 	2: {
 		"qte_speed": 0.95,
-		"tension_gain": 1.1,
-		"base_interrupt_chance": 0.2
+		"tension_gain": 0.9,
+		"base_interrupt_chance": 0.15
 	},
 	3: {
-		"qte_speed": 0.9,
-		"tension_gain": 1.25,
-		"base_interrupt_chance": 0.25
+		"qte_speed": 1.0,
+		"tension_gain": 1.0,
+		"base_interrupt_chance": 0.2
 	},
 	4: {
-		"qte_speed": 0.85,
-		"tension_gain": 1.4,
+		"qte_speed": 1.05,
+		"tension_gain": 1.1,
+		"base_interrupt_chance": 0.25
+	},
+	5: {
+		"qte_speed": 1.1,
+		"tension_gain": 1.2,
 		"base_interrupt_chance": 0.3
+	},
+	6: {
+		"qte_speed": 1.05,
+		"tension_gain": 1.1,
+		"base_interrupt_chance": 0.25
+	},
+	7: {
+		"qte_speed": 1.2,
+		"tension_gain": 1.5,
+		"base_interrupt_chance": 0.4
 	}
 }
 
